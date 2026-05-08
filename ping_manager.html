@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="theme-color" content="#07101f"/>
+  <title>🏓 Ping Manager</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>"/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:  #07101f; --bg2: #0c1929; --bg3: #112035;
+      --bd:  #193450;
+      --c0:  #3b82f6; --c1: #a855f7; --c2: #f59e0b; --c3: #10b981;
+      --bn:  #f97316;
+      --ok:  #22c55e; --bad: #ef4444;
+      --tx:  #d4e4f8; --mu:  #4a6480;
+      --r:   13px; --f: 'Barlow Condensed','Arial Narrow',sans-serif;
+    }
+    html { height: 100%; }
+    body {
+      background: var(--bg); color: var(--tx); font-family: var(--f);
+      min-height: 100%; padding-bottom: calc(32px + env(safe-area-inset-bottom));
+      -webkit-tap-highlight-color: transparent; overscroll-behavior: contain;
+    }
+    * { user-select: none; -webkit-user-select: none; }
+    input { user-select: text; -webkit-user-select: text; }
+
+    .wrap { max-width: 460px; margin: 0 auto; padding: 0 14px; }
+
+    /* Header */
+    .hdr { text-align: center; padding: 22px 0 18px; }
+    .hdr .ico { font-size: 2.6rem; line-height: 1; display: block; }
+    .hdr h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; color: #fff; margin-top: 2px; }
+    .hdr .sub { color: var(--mu); font-size: .65rem; letter-spacing: .22em; text-transform: uppercase; margin-top: 4px; }
+
+    /* Card */
+    .card { background: var(--bg2); border: 1px solid var(--bd); border-radius: var(--r); overflow: hidden; margin-bottom: 10px; }
+    .ch { background: linear-gradient(90deg, var(--bg3), var(--bg2)); padding: 9px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .ch .lbl { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--c0); }
+    .ch .rhs { font-size: .75rem; font-weight: 800; color: #fff; }
+    .cb { padding: 14px; }
+
+    /* Inputs */
+    .prow { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .pin {
+      flex: 1; background: var(--bg3); border: 1.5px solid var(--bd); border-radius: 10px;
+      color: var(--tx); font-family: var(--f); font-size: 16px; font-weight: 600;
+      padding: 13px 14px; outline: none; transition: border-color .15s; -webkit-appearance: none;
+    }
+    .pin:focus { border-color: var(--c0); }
+    .pin::placeholder { color: var(--mu); }
+    .xbtn {
+      background: none; border: 1.5px solid #ef444444; border-radius: 9px;
+      color: var(--bad); font-size: 1.2rem; width: 46px; height: 46px;
+      cursor: pointer; flex-shrink: 0; touch-action: manipulation;
+    }
+    .addbtn {
+      width: 100%; padding: 12px; background: none; border: 1.5px dashed var(--bd); border-radius: 10px;
+      color: var(--mu); font-family: var(--f); font-size: .85rem; font-weight: 700;
+      letter-spacing: .1em; cursor: pointer; text-transform: uppercase; touch-action: manipulation;
+    }
+
+    /* Table count */
+    .tsel { display: flex; gap: 8px; }
+    .topt {
+      flex: 1; padding: 13px 8px; background: var(--bg3); border: 1.5px solid var(--bd);
+      border-radius: 10px; color: var(--mu); font-family: var(--f); font-size: 1.3rem;
+      font-weight: 800; cursor: pointer; text-align: center; touch-action: manipulation; transition: all .15s;
+    }
+    .topt.on { background: #0d2848; border-color: var(--c0); color: var(--c0); }
+
+    /* Target chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      padding: 9px 13px; background: var(--bg3); border: 1.5px solid var(--bd); border-radius: 9px;
+      color: var(--mu); font-family: var(--f); font-size: .88rem; font-weight: 700;
+      cursor: pointer; touch-action: manipulation; transition: all .15s;
+    }
+    .chip.on { background: #0d2848; border-color: var(--c0); color: var(--c0); }
+    .tinfo { font-size: .72rem; margin-top: 9px; line-height: 1.5; padding: 9px 12px; border-radius: 9px; }
+    .tinfo.ok   { background: #091f10; color: var(--ok); }
+    .tinfo.warn { background: #1a0e03; color: #fb923c; }
+    .tinfo.neu  { background: var(--bg3); color: var(--mu); }
+
+    /* Buttons */
+    .btn {
+      display: block; width: 100%; padding: 17px; border-radius: 12px; border: none;
+      font-family: var(--f); font-size: 1.1rem; font-weight: 900; letter-spacing: .1em;
+      text-transform: uppercase; cursor: pointer; touch-action: manipulation; transition: opacity .15s;
+    }
+    .btn-blue:not(:disabled)  { background: linear-gradient(90deg,#1d4ed8,#2563eb); color: #fff; }
+    .btn-green:not(:disabled) { background: linear-gradient(90deg,#047857,#059669); color: #fff; box-shadow: 0 4px 20px #05966944; }
+    .btn:disabled { background: var(--bg3); color: var(--mu); cursor: not-allowed; }
+    .err { background: #1f0808; border: 1.5px solid #ef444455; border-radius: 10px; padding: 12px 14px; color: var(--bad); font-size: .85rem; font-weight: 600; margin-bottom: 10px; }
+
+    /* ── GAME ─────────────────────────────── */
+
+    /* Round strip */
+    .rstrip { padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+    .rnum { font-size: 2.6rem; font-weight: 900; color: #fff; line-height: 1; }
+    .rlbl { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: var(--mu); }
+    .rpct { font-size: 1.8rem; font-weight: 900; color: #fff; text-align: right; }
+    .prog { background: var(--bg3); border-radius: 99px; height: 5px; overflow: hidden; margin: 0 16px 12px; }
+    .progf { height: 100%; background: linear-gradient(90deg, var(--c0), var(--ok)); border-radius: 99px; transition: width .4s; }
+
+    /* Bench strip */
+    .bench {
+      margin: 0 14px 10px; background: #180e03;
+      border: 1.5px solid #f9731650; border-radius: 11px;
+      padding: 13px 15px; display: flex; align-items: center; gap: 12px;
+    }
+    .bench .bico { font-size: 1.5rem; flex-shrink: 0; }
+    .bench .btx .blbl { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--bn); }
+    .bench .btx .bnames { font-size: 1.15rem; font-weight: 800; color: #fb923c; margin-top: 1px; }
+    .nobnch { margin: 0 14px 10px; padding: 10px 14px; background: var(--bg3); border-radius: 10px; font-size: .75rem; color: var(--mu); text-align: center; }
+
+    /* Table grid */
+    .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 14px 10px; }
+    .tgrid.c1 { grid-template-columns: 1fr; }
+    .tc { border-radius: 12px; padding: 12px; }
+    .tclbl { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; margin-bottom: 10px; }
+
+    /* Player buttons */
+    .pb {
+      display: block; width: 100%; text-align: left; padding: 14px 13px;
+      border-radius: 10px; border: 1.5px solid var(--bd); background: var(--bg3);
+      color: var(--tx); font-family: var(--f); font-size: 1.05rem; font-weight: 700;
+      letter-spacing: .04em; cursor: pointer; margin-bottom: 7px;
+      touch-action: manipulation; transition: all .12s;
+    }
+    .pb:last-of-type { margin-bottom: 4px; }
+    .pb.sel { background: var(--ok); color: #000; border-color: var(--ok); }
+    .pb::before { content: '\00a0\00a0'; }
+    .pb.sel::before { content: '✓\00a0'; }
+    .tchint { font-size: .6rem; color: var(--mu); margin-top: 5px; }
+
+    /* Confirm */
+    .conf { padding: 2px 14px 14px; }
+
+    /* Standings */
+    .st { width: 100%; border-collapse: collapse; }
+    .st th { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: var(--mu); padding: 0 6px 8px; text-align: center; }
+    .st th:nth-child(2) { text-align: left; }
+    .st tr+tr td { border-top: 1px solid var(--bd); }
+    .st td { padding: 11px 6px; text-align: center; font-size: .88rem; }
+    .st td:first-child { font-size: .95rem; }
+    .st td:nth-child(2) { text-align: left; font-weight: 800; font-size: .9rem; }
+    .ww { color: var(--ok); font-weight: 700; }
+    .ll { color: var(--bad); font-weight: 700; }
+    .ss { color: var(--bn); font-weight: 600; }
+    .stleg { font-size: .58rem; color: var(--mu); margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* Progress bars */
+    .mprog { display: flex; flex-direction: column; gap: 9px; }
+    .mprow { display: flex; align-items: center; gap: 9px; }
+    .mpname { font-size: .8rem; font-weight: 700; width: 68px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mpbar { flex: 1; background: var(--bg3); border-radius: 99px; height: 9px; overflow: hidden; }
+    .mpfill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--c0), var(--ok)); transition: width .4s; }
+    .mpcnt { font-size: .78rem; font-weight: 700; color: var(--mu); flex-shrink: 0; width: 38px; text-align: right; }
+
+    /* History */
+    .hi { background: var(--bg3); border: 1px solid var(--bd); border-radius: 10px; padding: 11px 13px; margin-bottom: 7px; }
+    .hir { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--mu); margin-bottom: 5px; }
+    .hil { font-size: .84rem; line-height: 1.9; }
+    .hiw { color: var(--ok); font-weight: 700; }
+    .hib { color: var(--bn); font-size: .72rem; }
+
+    /* Toggle / reset */
+    .togbtn { background: none; border: none; color: var(--mu); font-family: var(--f); font-size: .62rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; cursor: pointer; touch-action: manipulation; }
+    .resa { text-align: center; padding: 8px; }
+    .rbtn { background: none; border: none; color: var(--mu); font-family: var(--f); font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; cursor: pointer; touch-action: manipulation; padding: 10px 20px; }
+    .rcf { display: flex; gap: 16px; align-items: center; justify-content: center; }
+    .ryes, .rno { background: none; border: none; font-family: var(--f); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; touch-action: manipulation; padding: 10px 16px; }
+    .ryes { color: var(--bad); font-weight: 800; }
+    .rno  { color: var(--mu); }
+
+    /* Done */
+    .done { background: linear-gradient(90deg,#78350f,#b45309); border-radius: 12px; padding: 18px; text-align: center; font-size: 1.1rem; font-weight: 800; letter-spacing: .05em; margin-bottom: 10px; }
+
+    @media (max-width: 360px) { .tgrid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="wrap"><div id="app"></div></div>
+<script>
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const gcd = (a,b) => b===0?a:gcd(b,a%b);
+const lcm = (a,b) => a/gcd(a,b)*b;
+const q = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const TC   = ['var(--c0)','var(--c1)','var(--c2)','var(--c3)'];
+const TBGS = ['#091a30','#170e2a','#1c1200','#081a12'];
+const TLBL = ['Masa 1','Masa 2','Masa 3','Masa 4'];
+const TMED = ['🥇','🥈','🥉','④'];
+const RANK = ['🥇','🥈','🥉','4.','5.','6.','7.','8.','9.','10.','11.','12.'];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let S = {
+  screen: 'setup',
+  names: ['Ioan','Marcu','Cosmin','Grindei','Sovan'],
+  nT: 2,
+  target: 12,     // 0 = deschis
+
+  // game
+  players: [],
+  bsched: [],     // bsched[r] = [names pe bancă în runda r]
+  totR: 0,        // 0 = deschis
+  round: 0,       // 0-indexed
+  sel: [],        // [câștigător per masă] sau null
+  history: [],
+  stats: {},      // {name:{w,l,m,s}}
+
+  // ui
+  showS: false, showH: false, cfR: false, err: ''
+};
+
+// ── Target logic ──────────────────────────────────────────────────────────────
+// Returnează mulțimile de meciuri care dau echilibru PERFECT
+// (fiecare jucător: exact același nr de meciuri și același nr de runde pe bancă)
+function perfectTargets(N, T) {
+  const B = N - 2*T;
+  if (B <= 0) return [5,10,15,20]; // fără bancă — orice merge
+
+  // Lungimea unui ciclu complet astfel încât toți să stea pe bancă la fel
+  // și să joace la fel:
+  // roundsPerCycle = lcm(N/gcd(N,2T), N/gcd(N,B))
+  const rpc = lcm(N/gcd(N,2*T), N/gcd(N,B));
+  const mpc = 2*T*rpc/N; // meciuri per jucător per ciclu
+
+  const arr = [];
+  for (let k=1; arr.length<6; k++) {
+    const v = k*mpc;
+    if (v > 40) break;
+    arr.push(v);
+  }
+  return arr.length ? arr : [4,8,12,16,20];
+}
+
+function targetInfo(N, T, target) {
+  if (!target) return { text: 'Sesiune deschisă — oprești când vreți.', cls: 'neu' };
+  const B = N - 2*T;
+  const R = Math.ceil(N*target/(2*T));
+  const situri  = B > 0 ? R*B/N : 0;
+  const perfect = B > 0 ? (R*B % N === 0 && R*2*T % N === 0) : (R*2*T % N === 0);
+  if (perfect) {
+    const sitStr = B>0 ? ` · ${situri} runde pe bancă fiecare` : ' · Nimeni nu stă pe bancă';
+    return { text: `✓ ${R} runde totale · ${target} meciuri fiecare${sitStr}`, cls:'ok' };
+  } else {
+    const pt = perfectTargets(N,T);
+    const near = [...pt].sort((a,b)=>Math.abs(a-target)-Math.abs(b-target))[0];
+    const mpc = Math.round(R*2*T/N);
+    return { text: `⚠ ${R} runde · Unii vor juca ${mpc}, alții ${mpc+1}. Sugerat pentru echilibru perfect: ${near}`, cls:'warn' };
+  }
+}
+
+// ── Bench schedule (greedy) ───────────────────────────────────────────────────
+// Garanție: niciodată același jucător pe bancă 2 runde la rând (dacă e posibil),
+// și diferența maximă de bancă-uri între jucători este ≤ 1.
+function buildSched(players, B, R) {
+  if (B <= 0) return Array(R).fill([]);
+  const sits = Object.fromEntries(players.map(p=>[p,0]));
+  const sched = [];
+  let prev = new Set();
+  for (let r=0; r<R; r++) {
+    const sorted = [...players].sort((a,b) => {
+      // 1. Prioritate: nu a stat în runda anterioară
+      const ap = prev.has(a)?1:0, bp = prev.has(b)?1:0;
+      if (ap!==bp) return ap-bp;
+      // 2. Cel mai puțin stat pe bancă
+      if (sits[a]!==sits[b]) return sits[a]-sits[b];
+      // 3. Ordine originală (stabilitate)
+      return players.indexOf(a)-players.indexOf(b);
+    });
+    const bench = sorted.slice(0,B);
+    bench.forEach(p=>sits[p]++);
+    prev = new Set(bench);
+    sched.push(bench);
+  }
+  return sched;
+}
+
+// ── Pairings (winners vs winners) ────────────────────────────────────────────
+// Sortează jucătorii activi după performanță și îi împerechează:
+// #1 vs #2 → Masa 1 (cei mai buni), #3 vs #4 → Masa 2, etc.
+function getPairs() {
+  const bench = new Set(S.bsched[S.round]||[]);
+  const active = S.players.filter(p=>!bench.has(p));
+  const sorted = [...active].sort((a,b) => {
+    const sa=S.stats[a], sb=S.stats[b];
+    const d = (sb.w-sb.l)-(sa.w-sa.l);
+    if (d!==0) return d;
+    if (sb.w!==sa.w) return sb.w-sa.w;
+    return S.players.indexOf(a)-S.players.indexOf(b);
+  });
+  return Array.from({length:S.nT},(_,t)=>[sorted[t*2],sorted[t*2+1]]);
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function startGame() {
+  const players = S.names.map(p=>p.trim()).filter(Boolean);
+  const T = S.nT;
+  if (players.length < T*2) { S.err=`Cu ${T} ${T===1?'masă':'mese'} ai nevoie de minim ${T*2} jucători.`; return render(); }
+  if (new Set(players).size !== players.length) { S.err='Există nume duplicate.'; return render(); }
+  const N=players.length, B=N-2*T;
+  const target=S.target;
+  const R = target ? Math.ceil(N*target/(2*T)) : 200;
+  S.players=players;
+  S.stats=Object.fromEntries(players.map(p=>[p,{w:0,l:0,m:0,s:0}]));
+  S.bsched=buildSched(players,B,R);
+  S.totR=target?R:0;
+  S.round=0; S.sel=Array(T).fill(null); S.history=[];
+  S.showS=false; S.showH=false; S.screen='game'; S.err='';
+  render();
+}
+
+function selectW(ti, name) {
+  S.sel[ti] = S.sel[ti]===name ? null : name;
+  render();
+}
+
+function confirmRound() {
+  if (S.sel.some(w=>!w)) return;
+  const pairs=getPairs(), bench=S.bsched[S.round]||[];
+  pairs.forEach((pair,ti)=>{
+    const w=S.sel[ti], l=pair.find(p=>p!==w);
+    S.stats[w].w++; S.stats[w].m++;
+    S.stats[l].l++; S.stats[l].m++;
+  });
+  bench.forEach(p=>S.stats[p].s++);
+  S.history.push({r:S.round+1, bench:[...bench], tables:pairs.map((pair,ti)=>({pair,w:S.sel[ti]}))});
+  S.round++; S.sel=Array(S.nT).fill(null);
+  if (S.totR>0 && S.round>=S.totR) S.screen='done';
+  render();
+}
+
+function standings() {
+  return Object.entries(S.stats).map(([n,s])=>({n,...s}))
+    .sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.w-a.w);
+}
+
+// ── Render: Setup ─────────────────────────────────────────────────────────────
+function renderSetup() {
+  const valid = S.names.map(n=>n.trim()).filter(Boolean);
+  const T=S.nT, N=valid.length;
+  const canGo = N>=T*2 && new Set(valid).size===valid.length;
+  const pts = N>=T*2 ? perfectTargets(N,T) : [];
+  const info = N>=T*2 ? targetInfo(N,T,S.target) : {text:`Adaugă minim ${T*2} jucători pentru calcul.`,cls:'neu'};
+
+  const rows = S.names.map((v,i)=>`
+    <div class="prow">
+      <input class="pin pi" type="text" data-i="${i}" value="${q(v)}"
+             placeholder="Jucător ${i+1}" maxlength="20" autocomplete="off" spellcheck="false"/>
+      ${S.names.length>2?`<button class="xbtn" data-rm="${i}">×</button>`:''}
+    </div>`).join('');
+
+  const tOpts=[1,2,3,4].map(n=>`<button class="topt${n===T?' on':''}" data-nt="${n}">${n}</button>`).join('');
+
+  const chipSet = [{v:0,lbl:'Fără limită'},...pts.map(v=>({v,lbl:String(v)}))];
+  const chips = chipSet.map(c=>`<button class="chip${c.v===S.target?' on':''}" data-tv="${c.v}">${c.lbl}</button>`).join('');
+
+  return `
+    <div class="hdr">
+      <span class="ico">🏓</span>
+      <h1>Ping Manager</h1>
+      <p class="sub">Configurează sesiunea</p>
+    </div>
+    ${S.err?`<div class="err">⚠ ${q(S.err)}</div>`:''}
+    <div class="card">
+      <div class="ch"><span class="lbl">👥 Jucători</span><span class="rhs" style="color:var(--mu);font-size:.72rem">${valid.length} adăugați</span></div>
+      <div class="cb">
+        <div id="rows">${rows}</div>
+        <button class="addbtn" id="addp">+ Adaugă jucător</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="lbl">🏓 Mese disponibile</span><span class="rhs" style="color:var(--mu);font-size:.7rem">min ${T*2} jucători</span></div>
+      <div class="cb"><div class="tsel">${tOpts}</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="lbl">🎯 Meciuri per jucător</span></div>
+      <div class="cb">
+        <div class="chips">${chips}</div>
+        <div class="tinfo ${info.cls}">${info.text}</div>
+      </div>
+    </div>
+    <button class="btn btn-blue" id="startbtn" ${canGo?'':'disabled'}>
+      ${canGo?'▶ Începe Turneul':(valid.length<T*2?`Adaugă minim ${T*2} jucători`:'Nume duplicate')}
+    </button>`;
+}
+
+// ── Render: Game ──────────────────────────────────────────────────────────────
+function renderGame() {
+  const T=S.nT, allSel=S.sel.every(w=>w);
+  const pairs=getPairs(), bench=S.bsched[S.round]||[];
+  const stand=standings();
+  const pct=S.totR>0?Math.round(S.round/S.totR*100):null;
+  const targetM=S.totR>0?Math.round(S.totR*2*T/S.players.length):0;
+
+  // Round header + progress
+  const rndH=`
+    <div class="rstrip">
+      <div>
+        <div class="rlbl">Runda</div>
+        <div class="rnum">#${S.round+1}${S.totR?` <span style="font-size:1.2rem;color:var(--mu)">/ ${S.totR}</span>`:''}</div>
+      </div>
+      ${pct!==null?`<div><div class="rlbl" style="text-align:right">Progres</div><div class="rpct">${pct}%</div></div>`:''}
+    </div>
+    ${pct!==null?`<div class="prog"><div class="progf" style="width:${pct}%"></div></div>`:''}`;
+
+  // Bench
+  const benchH=bench.length
+    ?`<div class="bench"><div class="bico">🪑</div><div class="btx"><div class="blbl">${bench.length===1?'Stă pe bancă':'Stau pe bancă'}</div><div class="bnames">${bench.map(q).join(' · ')}</div></div></div>`
+    :`<div class="nobnch">Toată lumea joacă în această rundă</div>`;
+
+  // Tables
+  const gridCls=T===1?'c1':'';
+  const tablesH=`<div class="tgrid ${gridCls}">
+    ${pairs.map((pair,ti)=>`
+      <div class="tc" style="background:var(--bg2);border:1.5px solid ${TC[ti]}33">
+        <div class="tclbl" style="color:${TC[ti]}">${TMED[ti]} ${TLBL[ti]}</div>
+        ${pair.map(p=>`<button class="pb${S.sel[ti]===p?' sel':''}" data-ti="${ti}" data-p="${q(p)}">${q(p)}</button>`).join('')}
+        <div class="tchint">↑ Tap pe câștigător</div>
+      </div>`).join('')}
+  </div>`;
+
+  // Standings
+  const activeBench=new Set(bench);
+  const stH=`
+    <table class="st">
+      <thead><tr><th>#</th><th>Jucător</th><th>V</th><th>Î</th><th>${targetM?`M/${targetM}`:'M'}</th><th>🪑</th></tr></thead>
+      <tbody>${stand.map((s,i)=>{
+        const ti=pairs.findIndex(pr=>pr.includes(s.n));
+        const isBench=activeBench.has(s.n);
+        const col=ti>=0?TC[ti]:isBench?'var(--bn)':'var(--tx)';
+        const bg=ti>=0?TBGS[ti]:isBench?'#180e03':'transparent';
+        return`<tr style="background:${bg}"><td>${RANK[i]||i+1+'.'}</td><td style="color:${col}">${q(s.n)}</td><td class="ww">${s.w}</td><td class="ll">${s.l}</td><td>${s.m}</td><td class="ss">${s.s}</td></tr>`;
+      }).join('')}</tbody>
+    </table>
+    <div class="stleg">
+      ${TC.slice(0,T).map((c,i)=>`<span style="color:${c}">● ${TLBL[i]}</span>`).join('')}
+      ${bench.length?`<span style="color:var(--bn)">● Bancă</span>`:''}
+      <span style="margin-left:auto">V=Victorii Î=Înfrângeri M=Meciuri 🪑=Bancă</span>
+    </div>`;
+
+  // Progress per player
+  const progH=targetM?`
+    <div class="card">
+      <div class="ch"><span class="lbl">📊 Progres meciuri</span></div>
+      <div class="cb"><div class="mprog">
+        ${stand.map(s=>{
+          const pct=Math.min(100,Math.round(s.m/targetM*100));
+          return`<div class="mprow"><div class="mpname">${q(s.n)}</div><div class="mpbar"><div class="mpfill" style="width:${pct}%"></div></div><div class="mpcnt">${s.m}/${targetM}</div></div>`;
+        }).join('')}
+      </div></div>
+    </div>`:'';
+
+  // History
+  const histH=S.history.length?`
+    <div class="card">
+      <div class="ch"><span class="lbl">📜 Istoric (${S.history.length})</span><button class="togbtn" id="togh">${S.showH?'▲ Ascunde':'▼ Arată'}</button></div>
+      ${S.showH?`<div class="cb">${[...S.history].reverse().map(h=>`
+        <div class="hi">
+          <div class="hir">Runda #${h.r}</div>
+          ${h.tables.map((t,i)=>`<div class="hil">${TMED[i]} ${t.pair.join(' vs ')} → <span class="hiw">${q(t.w)}</span></div>`).join('')}
+          ${h.bench.length?`<div class="hib">🪑 ${h.bench.map(q).join(', ')} pe bancă</div>`:''}
+        </div>`).join('')}</div>`:''}
+    </div>`:'';
+
+  const resetH=S.cfR
+    ?`<div class="rcf"><span style="font-size:.72rem;color:var(--mu);text-transform:uppercase;letter-spacing:.1em">Ești sigur?</span><button class="ryes" id="ryes">Da</button><button class="rno" id="rno">Nu</button></div>`
+    :`<button class="rbtn" id="rbtn">↺ Resetează</button>`;
+
+  return `
+    <div class="hdr" style="padding-bottom:10px">
+      <span class="ico">🏓</span><h1>Ping Manager</h1>
+      <p class="sub">${S.players.join(' · ')}</p>
+    </div>
+    <div class="card">
+      ${rndH}${benchH}
+      <div style="padding:0 14px">${tablesH}</div>
+      <div class="conf"><button class="btn btn-green" id="confbtn" ${allSel?'':'disabled'}>${allSel?'Confirmă Runda →':'Selectează câștigătorii'}</button></div>
+    </div>
+    <div class="card"><div class="ch"><span class="lbl">🏆 Clasament</span></div><div class="cb">${stH}</div></div>
+    ${progH}${histH}
+    <div class="resa">${resetH}</div>`;
+}
+
+// ── Render: Done ──────────────────────────────────────────────────────────────
+function renderDone() {
+  const stand=standings();
+  return `
+    <div class="hdr">
+      <span class="ico">🏆</span><h1>Gata!</h1>
+      <p class="sub">${S.totR} runde complete</p>
+    </div>
+    <div class="done">🎉 Sesiune terminată! Felicitări tuturor!</div>
+    <div class="card">
+      <div class="ch"><span class="lbl">🏆 Clasament Final</span></div>
+      <div class="cb">
+        <table class="st">
+          <thead><tr><th>#</th><th>Jucător</th><th>V</th><th>Î</th><th>M</th><th>🪑</th></tr></thead>
+          <tbody>${stand.map((s,i)=>{
+            const cols=['var(--ok)','var(--c0)','var(--c2)'];
+            const bgs=['#091a08','#09182e','#1a1200'];
+            const col=cols[i]||'var(--tx)', bg=bgs[i]||'transparent';
+            return`<tr style="background:${bg}"><td>${RANK[i]}</td><td style="color:${col}">${q(s.n)}</td><td class="ww">${s.w}</td><td class="ll">${s.l}</td><td>${s.m}</td><td class="ss">${s.s}</td></tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    <div style="padding:4px 0 0"><button class="btn btn-blue" id="pagain">▶ Joacă din nou</button></div>`;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const active=document.activeElement;
+  let fd=null;
+  if (active?.classList.contains('pi')) fd={i:+active.dataset.i,ss:active.selectionStart,se:active.selectionEnd};
+  document.getElementById('app').innerHTML=
+    S.screen==='setup'?renderSetup():S.screen==='done'?renderDone():renderGame();
+  if (fd){const el=document.querySelector(`.pi[data-i="${fd.i}"]`);if(el){el.focus();try{el.setSelectionRange(fd.ss,fd.se);}catch(_){}}}
+  bind();
+}
+
+// ── Bind ──────────────────────────────────────────────────────────────────────
+function bind() {
+  if (S.screen==='setup') {
+    document.querySelectorAll('.pi').forEach(inp=>{
+      inp.addEventListener('input',e=>{S.names[+e.target.dataset.i]=e.target.value;render();});
+    });
+    document.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>{S.names.splice(+b.dataset.rm,1);S.err='';render();}));
+    document.getElementById('addp')?.addEventListener('click',()=>{
+      if(S.names.length<12){S.names.push('');S.err='';render();document.querySelectorAll('.pi').item(S.names.length-1)?.focus();}
+    });
+    document.querySelectorAll('[data-nt]').forEach(b=>b.addEventListener('click',()=>{S.nT=+b.dataset.nt;S.err='';render();}));
+    document.querySelectorAll('[data-tv]').forEach(b=>b.addEventListener('click',()=>{S.target=+b.dataset.tv;render();}));
+    document.getElementById('startbtn')?.addEventListener('click',startGame);
+  } else if (S.screen==='game') {
+    document.querySelectorAll('[data-ti][data-p]').forEach(b=>b.addEventListener('click',()=>selectW(+b.dataset.ti,b.dataset.p)));
+    document.getElementById('confbtn')?.addEventListener('click',confirmRound);
+    document.getElementById('togh')?.addEventListener('click',()=>{S.showH=!S.showH;render();});
+    document.getElementById('rbtn')?.addEventListener('click',()=>{S.cfR=true;render();});
+    document.getElementById('ryes')?.addEventListener('click',()=>{S.screen='setup';S.cfR=false;render();});
+    document.getElementById('rno')?.addEventListener('click',()=>{S.cfR=false;render();});
+  } else if (S.screen==='done') {
+    document.getElementById('pagain')?.addEventListener('click',()=>{S.screen='setup';render();});
+  }
+}
+
+render();
+</script>
+</body>
+</html>
