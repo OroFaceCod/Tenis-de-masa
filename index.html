@@ -417,3 +417,60 @@ render();
 </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="theme-color" content="#07101f"/>
+    <title>🏓 Ping Manager</title>
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <style>
+        /* Păstrează stilurile tale de aici în colo... */
+        :root {
+            --bg: #07101f; --bg2: #0c1929; --bg3: #112035; --bd: #193450;
+            --c0: #3b82f6; --c1: #a855f7; --c2: #f59e0b; --c3: #10b981;
+            --ok: #22c55e; --bad: #ef4444; --tx: #d4e4f8; --mu: #4a6480;
+            --f: 'Barlow Condensed', sans-serif;
+        }
+        body { background: var(--bg); color: var(--tx); font-family: var(--f); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .wrap { width: 100%; max-width: 460px; }
+        .hdr { text-align: center; margin-bottom: 20px; }
+        .hdr h1 { font-size: 2.2rem; margin: 0; letter-spacing: 2px; color: #fff; }
+        .card { background: var(--bg2); border: 1px solid var(--bd); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .prow { display: flex; gap: 8px; margin-bottom: 8px; }
+        .pin { flex: 1; background: var(--bg3); border: 1px solid var(--bd); border-radius: 8px; color: #fff; padding: 12px; font-family: var(--f); font-size: 16px; }
+        .xbtn { background: none; border: 1px solid var(--bad); color: var(--bad); border-radius: 8px; width: 40px; cursor: pointer; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: var(--f); font-size: 1.1rem; }
+        .btn-blue { background: #2563eb; color: #fff; }
+        .btn-green { background: #059669; color: #fff; margin-top: 10px; }
+        .btn:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
+        .tgrid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 15px 0; }
+        .tc { background: var(--bg3); padding: 12px; border-radius: 10px; border-left: 4px solid var(--c0); }
+        .pb { width: 100%; text-align: left; padding: 12px; margin: 5px 0; border-radius: 6px; border: 1px solid var(--bd); background: var(--bg2); color: #fff; font-family: var(--f); cursor: pointer; }
+        .pb.sel { background: var(--ok); color: #000; border-color: var(--ok); font-weight: bold; }
+        .st { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .st td, .st th { padding: 8px; text-align: center; border-bottom: 1px solid var(--bd); }
+        .addbtn { background: none; border: 1px dashed var(--mu); color: var(--mu); padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="wrap"><div id="app"></div></div>
+
+    <script>
+        // Logica aplicației (rămâne cea de data trecută)
+        // ... (Funcțiile render, start, nextRound etc.)
+
+        // ADAUGĂ ACEST SCRIPT PENTRU INSTALARE:
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
