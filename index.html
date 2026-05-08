@@ -551,6 +551,28 @@ function bind() {
   }
 }
 
+// ── Persistență localStorage ──────────────────────────────────────────────────
+const LS_KEY = 'pingmanager_v1';
+
+function saveState() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(_) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    // Restaurează doar câmpurile de date, nu UI flags
+    Object.assign(S, saved, { err: '', cfR: false });
+  } catch(_) {}
+}
+
+// Suprascrie render ca să salveze după fiecare update
+const _render = render;
+function render() { _render(); saveState(); }
+
+loadState();
 render();
 </script>
 </body>
