@@ -2,475 +2,212 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=0"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-    <meta name="theme-color" content="#07101f"/>
-    <title>🏓 Ping Manager</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>"/>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
-    <style>
-        /* --- CSS STYLES --- */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --bg: #07101f; --bg2: #0c1929; --bg3: #112035;
-            --bd: #193450;
-            --c0: #3b82f6; --c1: #a855f7; --c2: #f59e0b; --c3: #10b981;
-            --bn: #f97316;
-            --ok: #22c55e; --bad: #ef4444;
-            --tx: #d4e4f8; --mu: #4a6480;
-            --r: 13px; --f: 'Barlow Condensed','Arial Narrow',sans-serif;
-        }
-        html { height: 100%; }
-        body {
-            background: var(--bg); color: var(--tx); font-family: var(--f);
-            min-height: 100%; padding-bottom: calc(32px + env(safe-area-inset-bottom));
-            -webkit-tap-highlight-color: transparent; overscroll-behavior: contain;
-        }
-        * { user-select: none; -webkit-user-select: none; }
-        input { user-select: text; -webkit-user-select: text; }
-
-        .wrap { max-width: 460px; margin: 0 auto; padding: 0 14px; }
-        .hdr { text-align: center; padding: 22px 0 18px; }
-        .hdr .ico { font-size: 2.6rem; line-height: 1; display: block; }
-        .hdr h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; color: #fff; margin-top: 2px; }
-        .hdr .sub { color: var(--mu); font-size: .65rem; letter-spacing: .22em; text-transform: uppercase; margin-top: 4px; }
-
-        .card { background: var(--bg2); border: 1px solid var(--bd); border-radius: var(--r); overflow: hidden; margin-bottom: 10px; }
-        .ch { background: linear-gradient(90deg, var(--bg3), var(--bg2)); padding: 9px 16px; display: flex; align-items: center; justify-content: space-between; }
-        .ch .lbl { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--c0); }
-        .ch .rhs { font-size: .75rem; font-weight: 800; color: #fff; }
-        .cb { padding: 14px; }
-
-        .prow { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .pin {
-            flex: 1; background: var(--bg3); border: 1.5px solid var(--bd); border-radius: 10px;
-            color: var(--tx); font-family: var(--f); font-size: 16px; font-weight: 600;
-            padding: 13px 14px; outline: none; transition: border-color .15s; -webkit-appearance: none;
-        }
-        .pin:focus { border-color: var(--c0); }
-        .pin::placeholder { color: var(--mu); }
-        .xbtn {
-            background: none; border: 1.5px solid #ef444444; border-radius: 9px;
-            color: var(--bad); font-size: 1.2rem; width: 46px; height: 46px;
-            cursor: pointer; flex-shrink: 0; touch-action: manipulation;
-        }
-        .addbtn {
-            width: 100%; padding: 12px; background: none; border: 1.5px dashed var(--bd); border-radius: 10px;
-            color: var(--mu); font-family: var(--f); font-size: .85rem; font-weight: 700;
-            letter-spacing: .1em; cursor: pointer; text-transform: uppercase; touch-action: manipulation;
-        }
-
-        .tsel { display: flex; gap: 8px; }
-        .topt {
-            flex: 1; padding: 13px 8px; background: var(--bg3); border: 1.5px solid var(--bd);
-            border-radius: 10px; color: var(--mu); font-family: var(--f); font-size: 1.3rem;
-            font-weight: 800; cursor: pointer; text-align: center; touch-action: manipulation; transition: all .15s;
-        }
-        .topt.on { background: #0d2848; border-color: var(--c0); color: var(--c0); }
-
-        .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-        .chip {
-            padding: 9px 13px; background: var(--bg3); border: 1.5px solid var(--bd); border-radius: 9px;
-            color: var(--mu); font-family: var(--f); font-size: .88rem; font-weight: 700;
-            cursor: pointer; touch-action: manipulation; transition: all .15s;
-        }
-        .chip.on { background: #0d2848; border-color: var(--c0); color: var(--c0); }
-        .tinfo { font-size: .72rem; margin-top: 9px; line-height: 1.5; padding: 9px 12px; border-radius: 9px; }
-        .tinfo.ok { background: #091f10; color: var(--ok); }
-        .tinfo.warn { background: #1a0e03; color: #fb923c; }
-        .tinfo.neu { background: var(--bg3); color: var(--mu); }
-
-        .btn {
-            display: block; width: 100%; padding: 17px; border-radius: 12px; border: none;
-            font-family: var(--f); font-size: 1.1rem; font-weight: 900; letter-spacing: .1em;
-            text-transform: uppercase; cursor: pointer; touch-action: manipulation; transition: opacity .15s;
-        }
-        .btn-blue:not(:disabled) { background: linear-gradient(90deg,#1d4ed8,#2563eb); color: #fff; }
-        .btn-green:not(:disabled) { background: linear-gradient(90deg,#047857,#059669); color: #fff; box-shadow: 0 4px 20px #05966944; }
-        .btn:disabled { background: var(--bg3); color: var(--mu); cursor: not-allowed; }
-        .err { background: #1f0808; border: 1.5px solid #ef444455; border-radius: 10px; padding: 12px 14px; color: var(--bad); font-size: .85rem; font-weight: 600; margin-bottom: 10px; }
-
-        .rstrip { padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; }
-        .rnum { font-size: 2.6rem; font-weight: 900; color: #fff; line-height: 1; }
-        .rlbl { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: var(--mu); }
-        .rpct { font-size: 1.8rem; font-weight: 900; color: #fff; text-align: right; }
-        .prog { background: var(--bg3); border-radius: 99px; height: 5px; overflow: hidden; margin: 0 16px 12px; }
-        .progf { height: 100%; background: linear-gradient(90deg, var(--c0), var(--ok)); border-radius: 99px; transition: width .4s; }
-
-        .bench {
-            margin: 0 14px 10px; background: #180e03;
-            border: 1.5px solid #f9731650; border-radius: 11px;
-            padding: 13px 15px; display: flex; align-items: center; gap: 12px;
-        }
-        .bench .bico { font-size: 1.5rem; flex-shrink: 0; }
-        .bench .btx .blbl { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--bn); }
-        .bench .btx .bnames { font-size: 1.15rem; font-weight: 800; color: #fb923c; margin-top: 1px; }
-        .nobnch { margin: 0 14px 10px; padding: 10px 14px; background: var(--bg3); border-radius: 10px; font-size: .75rem; color: var(--mu); text-align: center; }
-
-        .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 14px 10px; }
-        .tgrid.c1 { grid-template-columns: 1fr; }
-        .tc { border-radius: 12px; padding: 12px; }
-        .tclbl { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; margin-bottom: 10px; }
-
-        .pb {
-            display: block; width: 100%; text-align: left; padding: 14px 13px;
-            border-radius: 10px; border: 1.5px solid var(--bd); background: var(--bg3);
-            color: var(--tx); font-family: var(--f); font-size: 1.05rem; font-weight: 700;
-            letter-spacing: .04em; cursor: pointer; margin-bottom: 7px;
-            touch-action: manipulation; transition: all .12s;
-        }
-        .pb:last-of-type { margin-bottom: 4px; }
-        .pb.sel { background: var(--ok); color: #000; border-color: var(--ok); }
-        .pb::before { content: '\00a0\00a0'; }
-        .pb.sel::before { content: '✓\00a0'; }
-        .tchint { font-size: .6rem; color: var(--mu); margin-top: 5px; }
-
-        .st { width: 100%; border-collapse: collapse; }
-        .st th { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: var(--mu); padding: 0 6px 8px; text-align: center; }
-        .st th:nth-child(2) { text-align: left; }
-        .st tr+tr td { border-top: 1px solid var(--bd); }
-        .st td { padding: 11px 6px; text-align: center; font-size: .88rem; }
-        .st td:first-child { font-size: .95rem; }
-        .st td:nth-child(2) { text-align: left; font-weight: 800; font-size: .9rem; }
-        .ww { color: var(--ok); font-weight: 700; }
-        .ll { color: var(--bad); font-weight: 700; }
-        .ss { color: var(--bn); font-weight: 600; }
-        .stleg { font-size: .58rem; color: var(--mu); margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; }
-
-        .mprog { display: flex; flex-direction: column; gap: 9px; }
-        .mprow { display: flex; align-items: center; gap: 9px; }
-        .mpname { font-size: .8rem; font-weight: 700; width: 68px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mpbar { flex: 1; background: var(--bg3); border-radius: 99px; height: 9px; overflow: hidden; }
-        .mpfill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--c0), var(--ok)); transition: width .4s; }
-        .mpcnt { font-size: .78rem; font-weight: 700; color: var(--mu); flex-shrink: 0; width: 38px; text-align: right; }
-
-        .hi { background: var(--bg3); border: 1px solid var(--bd); border-radius: 10px; padding: 11px 13px; margin-bottom: 7px; }
-        .hir { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--mu); margin-bottom: 5px; }
-        .hil { font-size: .84rem; line-height: 1.9; }
-        .hiw { color: var(--ok); font-weight: 700; }
-        .hib { color: var(--bn); font-size: .72rem; }
-
-        .togbtn { background: none; border: none; color: var(--mu); font-family: var(--f); font-size: .62rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; cursor: pointer; touch-action: manipulation; }
-        .resa { text-align: center; padding: 8px; }
-        .rbtn { background: none; border: none; color: var(--mu); font-family: var(--f); font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; cursor: pointer; touch-action: manipulation; padding: 10px 20px; }
-        .rcf { display: flex; gap: 16px; align-items: center; justify-content: center; }
-        .ryes, .rno { background: none; border: none; font-family: var(--f); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; touch-action: manipulation; padding: 10px 16px; }
-        .ryes { color: var(--bad); font-weight: 800; }
-        .rno { color: var(--mu); }
-        .done { background: linear-gradient(90deg,#78350f,#b45309); border-radius: 12px; padding: 18px; text-align: center; font-size: 1.1rem; font-weight: 800; letter-spacing: .05em; margin-bottom: 10px; }
-        @media (max-width: 360px) { .tgrid { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-    <div class="wrap">
-        <div id="app"></div>
-    </div>
-
-<script>
-/* --- JAVASCRIPT LOGIC --- */
-const gcd = (a,b) => b===0?a:gcd(b,a%b);
-const lcm = (a,b) => a/gcd(a,b)*b;
-const q = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
-const TC = ['var(--c0)','var(--c1)','var(--c2)','var(--c3)'];
-const TBGS = ['#091a30','#170e2a','#1c1200','#081a12'];
-const TLBL = ['Masa 1','Masa 2','Masa 3','Masa 4'];
-const TMED = ['🥇','🥈','🥉','④'];
-const RANK = ['🥇','🥈','🥉','4.','5.','6.','7.','8.','9.','10.','11.','12.'];
-
-const DEFAULT_NAMES = ['Ioan','Marcu','Cosmin','Grindei','Sovan'];
-
-let S = null;
-
-function defaultState() {
-    return {
-        screen: 'setup',
-        names: [...DEFAULT_NAMES],
-        nT: 2,
-        target: 12,
-        players: [],
-        bsched: [],
-        totR: 0,
-        round: 0,
-        sel: [],
-        history: [],
-        stats: {},
-        showS: false, showH: false, cfR: false, err: ''
-    };
-}
-
-function perfectTargets(N, T) {
-    const B = N - 2*T;
-    if (B <= 0) return [5,10,15,20];
-    const rpc = lcm(N/gcd(N,2*T), N/gcd(N,B));
-    const mpc = 2*T*rpc/N;
-    const arr = [];
-    for (let k=1; arr.length<6; k++) {
-        const v = k*mpc;
-        if (v > 40) break;
-        arr.push(v);
-    }
-    return arr.length ? arr : [4,8,12,16,20];
-}
-
-function targetInfo(N, T, target) {
-    if (!target) return { text: 'Sesiune deschisă — oprești când vreți.', cls: 'neu' };
-    const B = N - 2*T;
-    const R = Math.ceil(N*target/(2*T));
-    const perfect = B > 0 ? (R*B % N === 0 && R*2*T % N === 0) : (R*2*T % N === 0);
-    const situri = B > 0 ? R*B/N : 0;
-    if (perfect) {
-        const sitStr = B>0 ? ` · ${situri} runde pe bancă fiecare` : ' · Nimeni nu stă pe bancă';
-        return { text: `✓ ${R} runde totale · ${target} meciuri fiecare${sitStr}`, cls:'ok' };
-    } else {
-        const pt = perfectTargets(N,T);
-        const near = [...pt].sort((a,b)=>Math.abs(a-target)-Math.abs(b-target))[0];
-        const mpc = Math.round(R*2*T/N);
-        return { text: `⚠ ${R} runde · Unii vor juca ${mpc}, alții ${mpc+1}. Sugerat: ${near}`, cls:'warn' };
-    }
-}
-
-function buildSched(players, B, R) {
-    if (B <= 0) return Array(R).fill([]);
-    const sits = Object.fromEntries(players.map(p=>[p,0]));
-    const sched = [];
-    let prev = new Set();
-    for (let r=0; r<R; r++) {
-        const sorted = [...players].sort((a,b) => {
-            const ap = prev.has(a)?1:0, bp = prev.has(b)?1:0;
-            if (ap!==bp) return ap-bp;
-            if (sits[a]!==sits[b]) return sits[a]-sits[b];
-            return players.indexOf(a)-players.indexOf(b);
-        });
-        const bench = sorted.slice(0,B);
-        bench.forEach(p=>sits[p]++);
-        prev = new Set(bench);
-        sched.push(bench);
-    }
-    return sched;
-}
-
-function getPairs() {
-    const bench = new Set(S.bsched[S.round]||[]);
-    const active = S.players.filter(p=>!bench.has(p));
-    const sorted = [...active].sort((a,b) => {
-        const sa=S.stats[a], sb=S.stats[b];
-        const d = (sb.w-sb.l)-(sa.w-sa.l);
-        if (d!==0) return d;
-        if (sb.w!==sa.w) return sb.w-sa.w;
-        return S.players.indexOf(a)-S.players.indexOf(b);
-    });
-    return Array.from({length:S.nT},(_,t)=>[sorted[t*2],sorted[t*2+1]]);
-}
-
-function startGame() {
-    const players = S.names.map(p=>p.trim()).filter(Boolean);
-    const T = S.nT;
-    if (players.length < T*2) { S.err=`Minim ${T*2} jucători necesari.`; render(); return; }
-    if (new Set(players).size !== players.length) { S.err='Nume duplicate.'; render(); return; }
-    const N=players.length, B=N-2*T;
-    const target=S.target;
-    const R = target ? Math.ceil(N*target/(2*T)) : 200;
-    S.players=players;
-    S.stats=Object.fromEntries(players.map(p=>[p,{w:0,l:0,m:0,s:0}]));
-    S.bsched=buildSched(players,B,R);
-    S.totR=target?R:0;
-    S.round=0; S.sel=Array(T).fill(null); S.history=[];
-    S.screen='game'; render();
-}
-
-function selectW(ti, name) {
-    S.sel[ti] = S.sel[ti]===name ? null : name;
-    render();
-}
-
-function confirmRound() {
-    if (S.sel.some(w=>!w)) return;
-    const pairs=getPairs(), bench=S.bsched[S.round]||[];
-    pairs.forEach((pair,ti)=>{
-        const w=S.sel[ti], l=pair.find(p=>p!==w);
-        S.stats[w].w++; S.stats[w].m++;
-        S.stats[l].l++; S.stats[l].m++;
-    });
-    bench.forEach(p=>S.stats[p].s++);
-    S.history.push({r:S.round+1, bench:[...bench], tables:pairs.map((pair,ti)=>({pair,w:S.sel[ti]}))});
-    S.round++; S.sel=Array(S.nT).fill(null);
-    if (S.totR>0 && S.round>=S.totR) S.screen='done';
-    render();
-}
-
-function standings() {
-    return Object.entries(S.stats).map(([n,s])=>({n,...s}))
-        .sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.w-a.w);
-}
-
-const LS_KEY = 'pingmanager_v2';
-function saveState() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(_) {} }
-function loadState() {
-    try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return;
-        S = { ...defaultState(), ...JSON.parse(raw), err: '', cfR: false };
-    } catch(_) { S = defaultState(); }
-}
-
-function renderSetup() {
-    const valid = S.names.map(n=>n.trim()).filter(Boolean);
-    const T=S.nT, N=valid.length;
-    const canGo = N>=T*2 && new Set(valid).size===valid.length;
-    const pts = N>=T*2 ? perfectTargets(N,T) : [];
-    const info = N>=T*2 ? targetInfo(N,T,S.target) : {text:`Adaugă minim ${T*2} jucători.`,cls:'neu'};
-
-    const rows = S.names.map((v,i)=>`
-        <div class="prow">
-            <input class="pin pi" type="text" data-i="${i}" value="${q(v)}" placeholder="Jucător ${i+1}"/>
-            ${S.names.length>2?`<button class="xbtn" data-rm="${i}">×</button>`:''}
-        </div>`).join('');
-
-    return `
-        <div class="hdr"><span class="ico">🏓</span><h1>Ping Manager</h1><p class="sub">Configurare</p></div>
-        ${S.err?`<div class="err">${q(S.err)}</div>`:''}
-        <div class="card">
-            <div class="ch"><span class="lbl">👥 Jucători</span><span class="rhs">${valid.length}</span></div>
-            <div class="cb"><div id="rows">${rows}</div><button class="addbtn" id="addp">+ Adaugă</button></div>
-        </div>
-        <div class="card">
-            <div class="ch"><span class="lbl">🏓 Mese</span></div>
-            <div class="cb"><div class="tsel">${[1,2,3,4].map(n=>`<button class="topt${n===T?' on':''}" data-nt="${n}">${n}</button>`).join('')}</div></div>
-        </div>
-        <div class="card">
-            <div class="ch"><span class="lbl">🎯 Target Meciuri</span></div>
-            <div class="cb">
-                <div class="chips">${[{v:0,lbl:'Fără limită'},...pts.map(v=>({v,lbl:String(v)}))].map(c=>`<button class="chip${c.v===S.target?' on':''}" data-tv="${c.v}">${c.lbl}</button>`).join('')}</div>
-                <div class="tinfo ${info.cls}">${info.text}</div>
-            </div>
-        </div>
-        <button class="btn btn-blue" id="startbtn" ${canGo?'':'disabled'}>Începe Turneul</button>`;
-}
-
-function renderGame() {
-    const T=S.nT, allSel=S.sel.every(w=>w);
-    const pairs=getPairs(), bench=S.bsched[S.round]||[];
-    const stand=standings();
-    const pct=S.totR>0?Math.round(S.round/S.totR*100):null;
-
-    return `
-        <div class="hdr" style="padding-bottom:10px"><span class="ico">🏓</span><h1>Ping Manager</h1></div>
-        <div class="card">
-            <div class="rstrip"><div><div class="rlbl">Runda</div><div class="rnum">#${S.round+1}</div></div>${pct!==null?`<div><div class="rlbl">Progres</div><div class="rpct">${pct}%</div></div>`:''}</div>
-            ${pct!==null?`<div class="prog"><div class="progf" style="width:${pct}%"></div></div>`:''}
-            ${bench.length?`<div class="bench"><div class="bico">🪑</div><div class="btx"><div class="blbl">Bancă</div><div class="bnames">${bench.map(q).join(' · ')}</div></div></div>`:`<div class="nobnch">Toată lumea joacă</div>`}
-            <div style="padding:0 14px" class="tgrid ${T===1?'c1':''}">
-                ${pairs.map((pair,ti)=>`
-                    <div class="tc" style="background:var(--bg2);border:1.5px solid ${TC[ti]}33">
-                        <div class="tclbl" style="color:${TC[ti]}">${TMED[ti]} ${TLBL[ti]}</div>
-                        ${pair.map(p=>`<button class="pb${S.sel[ti]===p?' sel':''}" data-ti="${ti}" data-p="${q(p)}">${q(p)}</button>`).join('')}
-                    </div>`).join('')}
-            </div>
-            <div class="conf"><button class="btn btn-green" id="confbtn" ${allSel?'':'disabled'}>Confirmă Runda</button></div>
-        </div>
-        <div class="card"><div class="ch"><span class="lbl">🏆 Clasament</span></div><div class="cb">
-            <table class="st"><thead><tr><th>#</th><th>Nume</th><th>V</th><th>Î</th><th>M</th><th>🪑</th></tr></thead>
-            <tbody>${stand.map((s,i)=>`<tr><td>${RANK[i]||i+1}</td><td>${q(s.n)}</td><td class="ww">${s.w}</td><td class="ll">${s.l}</td><td>${s.m}</td><td class="ss">${s.s}</td></tr>`).join('')}</tbody></table>
-        </div></div>
-        <div class="resa">${S.cfR?`<button class="ryes" id="ryes">DA, RESETEAZĂ</button><button class="rno" id="rno">NU</button>`:`<button class="rbtn" id="rbtn">↺ RESETEAZĂ SESIUNEA</button>`}</div>`;
-}
-
-function renderDone() {
-    const stand=standings();
-    return `
-        <div class="hdr"><span class="ico">🏆</span><h1>Final!</h1></div>
-        <div class="done">Sesiune terminată! 🎉</div>
-        <div class="card"><div class="ch"><span class="lbl">Clasament Final</span></div><div class="cb">
-            <table class="st"><tbody>${stand.map((s,i)=>`<tr><td>${RANK[i]||i+1}</td><td>${q(s.n)}</td><td class="ww">${s.w}</td><td>${s.m} m</td></tr>`).join('')}</tbody></table>
-        </div></div>
-        <button class="btn btn-blue" id="pagain">Joacă din nou</button>`;
-}
-
-function render() {
-    const app = document.getElementById('app');
-    if (S.screen === 'setup') app.innerHTML = renderSetup();
-    else if (S.screen === 'game') app.innerHTML = renderGame();
-    else app.innerHTML = renderDone();
-    bind(); saveState();
-}
-
-function bind() {
-    document.querySelectorAll('.pi').forEach(inp => inp.oninput = e => { S.names[+e.target.dataset.i] = e.target.value; saveState(); });
-    document.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { S.names.splice(+b.dataset.rm, 1); render(); });
-    document.getElementById('addp')?.addEventListener('click', () => { S.names.push(''); render(); });
-    document.querySelectorAll('[data-nt]').forEach(b => b.onclick = () => { S.nT = +b.dataset.nt; render(); });
-    document.querySelectorAll('[data-tv]').forEach(b => b.onclick = () => { S.target = +b.dataset.tv; render(); });
-    document.getElementById('startbtn')?.addEventListener('click', startGame);
-    document.querySelectorAll('[data-ti]').forEach(b => b.onclick = () => selectW(+b.dataset.ti, b.dataset.p));
-    document.getElementById('confbtn')?.addEventListener('click', confirmRound);
-    document.getElementById('rbtn')?.addEventListener('click', () => { S.cfR = true; render(); });
-    document.getElementById('rno')?.addEventListener('click', () => { S.cfR = false; render(); });
-    document.getElementById('ryes')?.addEventListener('click', () => { localStorage.removeItem(LS_KEY); S = defaultState(); render(); });
-    document.getElementById('pagain')?.addEventListener('click', () => { localStorage.removeItem(LS_KEY); S = defaultState(); render(); });
-}
-
-S = defaultState();
-loadState();
-render();
-</script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-    <meta name="mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
     <meta name="theme-color" content="#07101f"/>
     <title>🏓 Ping Manager</title>
     
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3252/3252194.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet"/>
     <style>
-        /* Păstrează stilurile tale de aici în colo... */
         :root {
             --bg: #07101f; --bg2: #0c1929; --bg3: #112035; --bd: #193450;
             --c0: #3b82f6; --c1: #a855f7; --c2: #f59e0b; --c3: #10b981;
             --ok: #22c55e; --bad: #ef4444; --tx: #d4e4f8; --mu: #4a6480;
             --f: 'Barlow Condensed', sans-serif;
         }
-        body { background: var(--bg); color: var(--tx); font-family: var(--f); margin: 0; padding: 20px; display: flex; justify-content: center; }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            background: var(--bg); color: var(--tx); font-family: var(--f); 
+            margin: 0; padding: env(safe-area-inset-top) 15px 40px; 
+            display: flex; justify-content: center; min-height: 100vh;
+        }
+
         .wrap { width: 100%; max-width: 460px; }
-        .hdr { text-align: center; margin-bottom: 20px; }
-        .hdr h1 { font-size: 2.2rem; margin: 0; letter-spacing: 2px; color: #fff; }
-        .card { background: var(--bg2); border: 1px solid var(--bd); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .prow { display: flex; gap: 8px; margin-bottom: 8px; }
-        .pin { flex: 1; background: var(--bg3); border: 1px solid var(--bd); border-radius: 8px; color: #fff; padding: 12px; font-family: var(--f); font-size: 16px; }
-        .xbtn { background: none; border: 1px solid var(--bad); color: var(--bad); border-radius: 8px; width: 40px; cursor: pointer; }
-        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: var(--f); font-size: 1.1rem; }
-        .btn-blue { background: #2563eb; color: #fff; }
-        .btn-green { background: #059669; color: #fff; margin-top: 10px; }
-        .btn:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
-        .tgrid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 15px 0; }
-        .tc { background: var(--bg3); padding: 12px; border-radius: 10px; border-left: 4px solid var(--c0); }
-        .pb { width: 100%; text-align: left; padding: 12px; margin: 5px 0; border-radius: 6px; border: 1px solid var(--bd); background: var(--bg2); color: #fff; font-family: var(--f); cursor: pointer; }
-        .pb.sel { background: var(--ok); color: #000; border-color: var(--ok); font-weight: bold; }
-        .st { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .st td, .st th { padding: 8px; text-align: center; border-bottom: 1px solid var(--bd); }
-        .addbtn { background: none; border: 1px dashed var(--mu); color: var(--mu); padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 5px; }
+
+        .hdr { text-align: center; padding: 20px 0; }
+        .hdr h1 { font-size: 2.4rem; margin: 0; letter-spacing: 3px; color: #fff; font-weight: 900; }
+        .hdr p { color: var(--mu); margin: 5px 0 0; font-size: 0.8rem; letter-spacing: 1px; }
+
+        .card { 
+            background: var(--bg2); border: 1px solid var(--bd); 
+            border-radius: 16px; padding: 18px; margin-bottom: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--c0); letter-spacing: 1.5px; margin-bottom: 12px; display: block; }
+
+        .prow { display: flex; gap: 10px; margin-bottom: 10px; }
+        .pin { 
+            flex: 1; background: var(--bg3); border: 1.5px solid var(--bd); 
+            border-radius: 10px; color: #fff; padding: 14px; 
+            font-family: var(--f); font-size: 16px; transition: 0.2s;
+        }
+        .pin:focus { border-color: var(--c0); outline: none; }
+
+        .xbtn { 
+            background: rgba(239, 68, 68, 0.1); border: 1px solid var(--bad); 
+            color: var(--bad); border-radius: 10px; width: 48px; 
+            cursor: pointer; font-size: 1.2rem; font-weight: bold;
+        }
+
+        .btn { 
+            width: 100%; padding: 18px; border-radius: 12px; border: none; 
+            font-weight: 900; text-transform: uppercase; cursor: pointer; 
+            font-family: var(--f); font-size: 1.1rem; letter-spacing: 1px; transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+
+        .btn-blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; }
+        .btn-green { background: linear-gradient(135deg, #059669, #047857); color: #fff; margin-top: 10px; }
+        .btn:disabled { background: #1e293b; color: #475569; cursor: not-allowed; transform: none; }
+
+        .tgrid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 15px 0; }
+        .tc { 
+            background: var(--bg3); padding: 15px; border-radius: 14px; 
+            border: 1px solid var(--bd); border-left: 5px solid var(--c0); 
+        }
+
+        .pb { 
+            width: 100%; text-align: left; padding: 15px; margin: 8px 0; 
+            border-radius: 10px; border: 1.5px solid var(--bd); 
+            background: var(--bg2); color: #fff; font-family: var(--f); 
+            font-size: 1.1rem; font-weight: 600; cursor: pointer;
+        }
+        .pb.sel { background: var(--ok); color: #000; border-color: var(--ok); box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
+
+        .st { width: 100%; border-collapse: collapse; }
+        .st th { font-size: 0.65rem; color: var(--mu); text-transform: uppercase; padding-bottom: 10px; }
+        .st td { padding: 12px 8px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 1rem; }
+        .st tr:last-child td { border: none; }
+
+        .addbtn { 
+            background: none; border: 1.5px dashed var(--mu); color: var(--mu); 
+            padding: 12px; width: 100%; border-radius: 10px; 
+            cursor: pointer; font-weight: bold; margin-top: 5px; font-family: var(--f);
+        }
+
+        .res-area { text-align: center; margin-top: 20px; }
+        .res-btn { background: none; border: none; color: var(--mu); font-size: 0.7rem; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <div class="wrap"><div id="app"></div></div>
 
-    <script>
-        // Logica aplicației (rămâne cea de data trecută)
-        // ... (Funcțiile render, start, nextRound etc.)
+<script>
+let S = {
+    screen: 'setup',
+    names: ['Ioan', 'Marcu', 'Cosmin', 'Grindei', 'Sovan'],
+    nT: 2,
+    players: [],
+    round: 0,
+    stats: {},
+    sel: [],
+    err: ''
+};
 
-        // ADAUGĂ ACEST SCRIPT PENTRU INSTALARE:
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
+function render() {
+    const app = document.getElementById('app');
+    if (S.screen === 'setup') {
+        app.innerHTML = `
+            <div class="hdr"><h1>PING MANAGER</h1><p>TENIS DE MASĂ TEAM</p></div>
+            <div class="card">
+                <span class="section-title">👥 Jucători înscriși</span>
+                <div id="p-list">${S.names.map((n, i) => `
+                    <div class="prow">
+                        <input class="pin" type="text" placeholder="Nume jucător..." value="${n}" oninput="S.names[${i}] = this.value">
+                        <button class="xbtn" onclick="removeName(${i})">✕</button>
+                    </div>`).join('')}
+                </div>
+                <button class="addbtn" onclick="addName()">+ ADAUGĂ ALT JUCĂTOR</button>
+            </div>
+            ${S.err ? `<div style="color:var(--bad);text-align:center;margin-bottom:10px;font-weight:bold">${S.err}</div>` : ''}
+            <button class="btn btn-blue" onclick="start()">LANSEAZĂ TURNEUL</button>
+        `;
+    } else {
+        const pairs = getPairs();
+        const stand = Object.entries(S.stats).sort((a,b) => (b[1].w - a[1].w) || (a[1].l - b[1].l));
+        app.innerHTML = `
+            <div class="hdr"><h1>RUNDA #${S.round + 1}</h1><p>SELECTEAZĂ CÂȘTIGĂTORII</p></div>
+            <div class="card">
+                <span class="section-title">🏓 Mese de joc</span>
+                <div class="tgrid">
+                    ${pairs.map((p, ti) => `
+                        <div class="tc">
+                            <div style="font-size:0.7rem; color:var(--mu); margin-bottom:5px">MASA ${ti+1}</div>
+                            <button class="pb ${S.sel[ti] === p[0] ? 'sel' : ''}" onclick="vote(${ti}, '${p[0]}')">${p[0]}</button>
+                            <button class="pb ${S.sel[ti] === p[1] ? 'sel' : ''}" onclick="vote(${ti}, '${p[1]}')">${p[1]}</button>
+                        </div>`).join('')}
+                </div>
+                <button class="btn btn-green" ${S.sel.filter(x=>x).length < S.nT ? 'disabled' : ''} onclick="nextRound()">CONFIRMĂ REZULTATE</button>
+            </div>
+            <div class="card">
+                <span class="section-title">🏆 Clasament Live</span>
+                <table class="st">
+                    <thead><tr><th>#</th><th align="left">Jucător</th><th>V</th><th>Î</th></tr></thead>
+                    <tbody>
+                    ${stand.map((s, i) => `<tr><td>${i+1}</td><td align="left" style="font-weight:bold">${s[0]}</td><td style="color:var(--ok)">${s[1].w}</td><td style="color:var(--bad)">${s[1].l}</td></tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="res-area">
+                <button class="res-btn" onclick="if(confirm('Resetezi tot?')) location.reload()">↺ Resetare completă</button>
+            </div>
+        `;
+    }
+}
+
+function addName() { S.names.push(''); render(); }
+function removeName(i) { S.names.splice(i, 1); render(); }
+
+function start() {
+    S.players = S.names.filter(n => n.trim() !== '');
+    if (S.players.length < S.nT * 2) {
+        S.err = `Ai nevoie de minim ${S.nT * 2} jucători!`;
+        render();
+        return;
+    }
+    S.err = '';
+    S.players.forEach(p => S.stats[p] = { w: 0, l: 0 });
+    S.screen = 'game';
+    S.round = 0;
+    S.sel = Array(S.nT).fill(null);
+    render();
+}
+
+function getPairs() {
+    const sorted = [...S.players].sort((a,b) => S.stats[a].w - S.stats[b].w);
+    const p = [];
+    for(let i=0; i<S.nT; i++) p.push([sorted[i*2], sorted[i*2+1]]);
+    return p;
+}
+
+function vote(ti, name) { S.sel[ti] = name; render(); }
+
+function nextRound() {
+    const pairs = getPairs();
+    pairs.forEach((p, ti) => {
+        const win = S.sel[ti];
+        const los = p.find(n => n !== win);
+        S.stats[win].w++;
+        S.stats[los].l++;
+    });
+    S.round++;
+    S.sel = Array(S.nT).fill(null);
+    render();
+}
+
+// Înregistrare Service Worker pentru PWA
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+render();
+</script>
 </body>
 </html>
